@@ -115,7 +115,7 @@ export function init(doc = document) {
     if (!e.target.classList.contains("qty-input")) return;
     const idx = parseInt(e.target.dataset.idx, 10);
     const val = parseInt(e.target.value, 10);
-    if (!Number.isNaN(val) && val >= 1) {
+    if (Number.isFinite(val) && val >= 1) {
       cart[idx].qty = val;
       persist();
       render(doc);

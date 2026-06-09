@@ -103,4 +103,12 @@ describe('cart module', () => {
 
     expect(mod.getCart()).toEqual(mod.INITIAL_ITEMS);
   });
+
+  test('restoreFromStorage falls back to initial items when storage is empty', async () => {
+    const mod = await import('./cart.js');
+
+    mod.restoreFromStorage();
+
+    expect(mod.getCart()).toEqual(mod.INITIAL_ITEMS);
+  });
 });
