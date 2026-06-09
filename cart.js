@@ -18,7 +18,7 @@ export function fmt(n) {
 }
 
 export function escHtml(str) {
-  return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/\"/g, "&quot;");
+  return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 }
 
 export function getCart() {
@@ -105,7 +105,7 @@ export function init(doc = document) {
   body.addEventListener("click", (e) => {
     const btn = e.target.closest(".delete-btn");
     if (!btn) return;
-    const idx = Number.parseInt(btn.dataset.idx, 10);
+    const idx = parseInt(btn.dataset.idx, 10);
     cart.splice(idx, 1);
     persist();
     render(doc);
@@ -113,8 +113,8 @@ export function init(doc = document) {
 
   body.addEventListener("change", (e) => {
     if (!e.target.classList.contains("qty-input")) return;
-    const idx = Number.parseInt(e.target.dataset.idx, 10);
-    const val = Number.parseInt(e.target.value, 10);
+    const idx = parseInt(e.target.dataset.idx, 10);
+    const val = parseInt(e.target.value, 10);
     if (!Number.isNaN(val) && val >= 1) {
       cart[idx].qty = val;
       persist();
