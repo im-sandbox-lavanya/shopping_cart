@@ -11,7 +11,7 @@ function setupDom() {
 }
 
 describe('cart module', () => {
-  beforeEach(async () => {
+  beforeEach(() => {
     jest.resetModules();
     sessionStorage.clear();
     setupDom();
@@ -93,5 +93,14 @@ describe('cart module', () => {
     mod.restoreFromStorage();
 
     expect(mod.getCart()).toEqual(sample);
+  });
+
+  test('restoreFromStorage falls back to initial items on invalid JSON', async () => {
+    sessionStorage.setItem('cart', 'invalid-json');
+    const mod = await import('./cart.js');
+
+    mod.restoreFromStorage();
+
+    expect(mod.getCart()).toEqual(mod.INITIAL_ITEMS);
   });
 });
