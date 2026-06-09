@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Simple Shopping Cart</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: "Helvetica Neue", Arial, sans-serif;
+      font-size: 14px;
+      background: #fff;
+      color: #333;
+    }
+
+    /* ── Navbar ── */
+    nav {
+      background: #f5f5f5;
+      border-bottom: 1px solid #ddd;
+      padding: 10px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    nav .brand { font-size: 16px; font-weight: 500; }
+    nav .cart-btn {
+      background: #aaa;
+      color: #fff;
+      border: none;
+      padding: 6px 14px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    nav .cart-btn .badge {
+      background: #777;
+      border-radius: 10px;
+      padding: 1px 7px;
+      font-size: 12px;
+    }
+
+    /* ── Main content ── */
+    main {
+      max-width: 860px;
+      margin: 30px auto;
+      padding: 0 16px;
+    }
+    h1 {
+      text-align: center;
+      font-weight: 400;
+      font-size: 28px;
+      margin-bottom: 24px;
+    }
+
+    /* ── Table ── */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      border: 1px solid #ddd;
+    }
+    thead th {
+      text-align: left;
+      padding: 10px 12px;
+      border-bottom: 1px solid #ddd;
+      font-weight: 600;
+    }
+    tbody td {
+      padding: 10px 12px;
+      border-bottom: 1px solid #eee;
+      vertical-align: middle;
+    }
+    tbody tr:last-child td { border-bottom: none; }
+
+    .col-action { width: 48px; }
+    .col-price, .col-subtotal { width: 90px; text-align: right; }
+    .col-qty { width: 120px; }
+
+    .delete-btn {
+      background: #c0392b;
+      color: #fff;
+      border: none;
+      padding: 6px 10px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+    .delete-btn:hover { background: #a93226; }
+
+    .qty-input {
+      width: 100%;
+      padding: 5px 8px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      font-size: 14px;
+      text-align: center;
+    }
+    .qty-input:focus { outline: 2px solid #5b9bd5; border-color: transparent; }
+
+    /* ── Total row ── */
+    .total-row td {
+      border-top: 1px solid #ddd;
+      padding: 10px 12px;
+      font-weight: 600;
+      text-align: right;
+    }
+
+    /* ── Action buttons ── */
+    .actions {
+      margin-top: 16px;
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .btn {
+      padding: 8px 16px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .btn-back     { background: #5b9bd5; }
+    .btn-save     { background: #5cb85c; }
+    .btn-clear    { background: #c0392b; }
+    .btn-checkout { background: #5cb85c; }
+    .btn:hover { opacity: 0.88; }
+  </style>
+</head>
+<body>
+
+<nav>
+  <span class="brand">Simple Shopping Cart</span>
+  <button class="cart-btn">
+    <span class="badge" id="cart-count">0</span>
+    Cart &#x1F6D2;
+  </button>
+</nav>
+
+<main>
+  <h1>Cart Details</h1>
+
+  <table id="cart-table">
+    <thead>
+      <tr>
+        <th class="col-action"></th>
+        <th>Name</th>
+        <th class="col-price">Price</th>
+        <th class="col-qty">Quantity</th>
+        <th class="col-subtotal">Subtotal</th>
+      </tr>
+    </thead>
+    <tbody id="cart-body"></tbody>
+    <tfoot>
+      <tr class="total-row">
+        <td colspan="4">Total</td>
+        <td id="cart-total"></td>
+      </tr>
+    </tfoot>
+  </table>
+
+  <div class="actions">
+    <button class="btn btn-back"     onclick="goBack()">&#8592; Back</button>
+    <button class="btn btn-save"     onclick="saveChanges()">&#10003; Save Changes</button>
+    <button class="btn btn-clear"    onclick="clearCart()">&#128465; Clear Cart</button>
+    <button class="btn btn-checkout" onclick="checkout()">&#10003; Checkout</button>
+  </div>
+</main>
+
+<script>
+  // Initial cart data
+  const INITIAL_ITEMS = [
+    { id: 1, name: "DELL Inspiron 15 7000 15.6",                       price: 899.00, qty: 10 },
+    { id: 2, name: "MICROSOFT Surface Pro 4 & Typecover - 128 GB",      price: 799.00, qty: 5  },
+    { id: 3, name: "DELL Inspiron 15 5000 15.6",                        price: 599.00, qty: 6  },
+    { id: 4, name: 'LENOVO Ideapad 320s-14IKB 14" Laptop - Grey',       price: 399.00, qty: 8  },
+    { id: 5, name: "ASUS Transformer Mini T102HA 10.1\" 2 in 1 - Silver",price: 549.99, qty: 5  },
+    { id: 6, name: "DELL Inspiron 15 5000 15",                          price: 449.99, qty: 2  },
+  ];
+
+  // Load cart from sessionStorage or fall back to initial data
+  let cart = JSON.parse(sessionStorage.getItem("cart")) || INITIAL_ITEMS.map(i => ({ ...i }));
+
+  function fmt(n) {
+    return n.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  }
+
+  function persist() {
+    sessionStorage.setItem("cart", JSON.stringify(cart));
+  }
+
+  function render() {
+    const tbody = document.getElementById("cart-body");
+    tbody.innerHTML = "";
+
+    let total = 0;
+    let totalQty = 0;
+
+    cart.forEach((item, idx) => {
+      const subtotal = item.price * item.qty;
+      total    += subtotal;
+      totalQty += item.qty;
+
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td class="col-action">
+          <button class="delete-btn" title="Remove item" data-idx="${idx}">&#128465;</button>
+        </td>
+        <td>${escHtml(item.name)}</td>
+        <td class="col-price">${fmt(item.price)}</td>
+        <td class="col-qty">
+          <input class="qty-input" type="number" min="1" value="${item.qty}" data-idx="${idx}" />
+        </td>
+        <td class="col-subtotal">${fmt(subtotal)}</td>
+      `;
+      tbody.appendChild(tr);
+    });
+
+    document.getElementById("cart-total").textContent = fmt(total);
+    document.getElementById("cart-count").textContent = totalQty;
+  }
+
+  function escHtml(str) {
+    return str.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+  }
+
+  // Event delegation for delete and quantity change
+  document.getElementById("cart-body").addEventListener("click", e => {
+    const btn = e.target.closest(".delete-btn");
+    if (btn) {
+      const idx = parseInt(btn.dataset.idx, 10);
+      cart.splice(idx, 1);
+      persist();
+      render();
+    }
+  });
+
+  document.getElementById("cart-body").addEventListener("change", e => {
+    if (e.target.classList.contains("qty-input")) {
+      const idx = parseInt(e.target.dataset.idx, 10);
+      const val = parseInt(e.target.value, 10);
+      if (!isNaN(val) && val >= 1) {
+        cart[idx].qty = val;
+        persist();
+        render();
+      } else {
+        e.target.value = cart[idx].qty; // revert invalid input
+      }
+    }
+  });
+
+  function goBack()      { history.back(); }
+  function saveChanges() { persist(); alert("Changes saved!"); }
+  function clearCart()   { cart = []; persist(); render(); }
+  function checkout()    { alert(`Proceeding to checkout.\nTotal items: ${cart.reduce((s,i)=>s+i.qty,0)}`); }
+
+  render();
+</script>
+</body>
+</html>
