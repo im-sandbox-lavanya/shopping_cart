@@ -32,7 +32,7 @@ export function setCart(nextCart) {
 export function restoreFromStorage(storage = sessionStorage) {
   try {
     const stored = JSON.parse(storage.getItem("cart"));
-    cart = Array.isArray(stored) ? stored : cloneItems(INITIAL_ITEMS);
+    cart = Array.isArray(stored) ? cloneItems(stored) : cloneItems(INITIAL_ITEMS);
   } catch {
     cart = cloneItems(INITIAL_ITEMS);
   }
