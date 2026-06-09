@@ -9,7 +9,7 @@ export const INITIAL_ITEMS = [
 
 let cart = [];
 
-function clone_items(items) {
+function cloneItems(items) {
   return items.map((item) => ({ ...item }));
 }
 
@@ -26,15 +26,15 @@ export function getCart() {
 }
 
 export function setCart(nextCart) {
-  cart = clone_items(nextCart);
+  cart = cloneItems(nextCart);
 }
 
 export function restoreFromStorage(storage = sessionStorage) {
   try {
     const stored = JSON.parse(storage.getItem("cart"));
-    cart = Array.isArray(stored) ? stored : clone_items(INITIAL_ITEMS);
+    cart = Array.isArray(stored) ? stored : cloneItems(INITIAL_ITEMS);
   } catch {
-    cart = clone_items(INITIAL_ITEMS);
+    cart = cloneItems(INITIAL_ITEMS);
   }
   return cart;
 }
@@ -50,12 +50,12 @@ export function render(doc = document) {
   tbody.innerHTML = "";
 
   let total = 0;
-  let total_qty = 0;
+  let totalQty = 0;
 
   cart.forEach((item, idx) => {
     const subtotal = item.price * item.qty;
     total += subtotal;
-    total_qty += item.qty;
+    totalQty += item.qty;
 
     const tr = doc.createElement("tr");
     tr.innerHTML = `
@@ -72,11 +72,11 @@ export function render(doc = document) {
     tbody.appendChild(tr);
   });
 
-  const total_node = doc.getElementById("cart-total");
-  if (total_node) total_node.textContent = fmt(total);
+  const totalNode = doc.getElementById("cart-total");
+  if (totalNode) totalNode.textContent = fmt(total);
 
-  const count_node = doc.getElementById("cart-count");
-  if (count_node) count_node.textContent = total_qty;
+  const countNode = doc.getElementById("cart-count");
+  if (countNode) countNode.textContent = totalQty;
 }
 
 export function clearCart() {
